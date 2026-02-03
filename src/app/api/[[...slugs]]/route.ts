@@ -11,7 +11,7 @@ const rooms = new Elysia({ prefix: '/room' })
 
     // NOTE: create a room on upstash database
     await redis.hset(`meta:${roomId}`, {
-      connected: [], // which user is currently connected to room
+      connected: [], // contains user's token to see which user is currently connected to room
       createdAt: Date.now(),
     })
 
