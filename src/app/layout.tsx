@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import RealtimeProviders from '@/components/base/realtime-provider'
 import { TailwindIndicator } from '@/components/base/tailwind-indicator'
 import { ThemeProvider } from '@/components/base/theme-provider'
 // import { Toaster } from '@/components/ui/sonner'
@@ -33,7 +34,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <main className="mx-auto w-full max-w-7xl px-4 md:px-6 lg:px-8">
-            {children}
+            <RealtimeProviders>{children}</RealtimeProviders>
             <TailwindIndicator />
           </main>
           {/* <Toaster closeButton /> */}
