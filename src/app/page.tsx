@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Suspense } from 'react'
 import { Button } from '@/components/ui/button'
 import { useUsername } from '@/hooks/use-username'
-import { client } from '@/lib/client'
+import { api } from '@/lib/api'
 
 export default function Page() {
   return (
@@ -23,7 +23,7 @@ function Lobby() {
     mutationFn: async () => {
       // NOTE: client comes from elysia backend
       // the method we are allowed to use is fully type-safe
-      const res = await client.room.create.post()
+      const res = await api.room.create.post()
 
       if (res.status === 200) {
         router.push(`/room/${res.data?.roomId}`) // also fully type-safe

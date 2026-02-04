@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { client } from '@/lib/client'
+import { api } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
 function formatTimeRemaining(seconds: number) {
@@ -29,7 +29,7 @@ export default function Page() {
   const { data: ttlData } = useQuery({
     queryKey: ['ttl', roomId],
     queryFn: async () => {
-      const res = await client.room.ttl.get({ query: { roomId } })
+      const res = await api.room.ttl.get({ query: { roomId } })
       return res.data
     },
   })
@@ -61,7 +61,7 @@ export default function Page() {
 
   const { mutate: destroyRoom } = useMutation({
     mutationFn: async () => {
-      await client.room.delete(null, { query: { roomId } })
+      await api.room.delete(null, { query: { roomId } })
     },
   })
 
