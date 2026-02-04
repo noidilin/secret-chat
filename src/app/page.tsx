@@ -1,7 +1,7 @@
 'use client'
 
 import { useMutation } from '@tanstack/react-query'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import { Button } from '@/components/ui/button'
 import { useUsername } from '@/hooks/use-username'
@@ -19,6 +19,10 @@ function Lobby() {
   const { username } = useUsername()
   const router = useRouter()
 
+  const searchParams = useSearchParams()
+  const wasDestroyed = searchParams.get('destroyed') === 'true'
+  const error = searchParams.get('error')
+
   const { mutate: createRoom } = useMutation({
     mutationFn: async () => {
       // NOTE: client comes from elysia backend
@@ -34,6 +38,31 @@ function Lobby() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8">
+        {wasDestroyed && (
+          <div className="border border-red-900 bg-red-950/50 p-4 text-center">
+            <p className="font-bold text-red-500 text-sm">ROOM DESTROYED</p>
+            <p className="mt-1 text-muted-foreground text-xs">
+              All messages were permanently deleted.
+            </p>
+          </div>
+        )}
+        {error === 'room-not-found' && (
+          <div className="border border-red-900 bg-red-950/50 p-4 text-center">
+            <p className="font-bold text-red-500 text-sm">ROOM NOT FOUND</p>
+            <p className="mt-1 text-muted-foreground text-xs">
+              This room may have expired or never existed.
+            </p>
+          </div>
+        )}
+        {error === 'room-full' && (
+          <div className="border border-red-900 bg-red-950/50 p-4 text-center">
+            <p className="font-bold text-red-500 text-sm">ROOM FULL</p>
+            <p className="mt-1 text-muted-foreground text-xs">
+              This room is at maximum capacity.
+            </p>
+          </div>
+        )}
+
         <div className="space-y-2 text-center">
           <h1 className="font-bold text-2xl text-green-500 tracking-tight">
             {'>'}private_chat
@@ -70,4 +99,3 @@ function Lobby() {
     </main>
   )
 }
-
