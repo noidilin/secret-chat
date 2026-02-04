@@ -35,6 +35,23 @@ const messages = new Elysia({ prefix: '/messages' })
 
       const roomExists = await redis.exists(`meta:${roomId}`)
       if (!roomExists) throw new Error('Room does not exist')
+
+      const message: Message = {
+        id: nanoid(),
+        sender,
+        text,
+        timestamp: Date.now(),
+        roomId,
+      }
+
+      // NOTE: add message list (token is included in backend)
+      await redis.rpush(`messages:${roomId}`, { ...message, token: auth.token })
+      await realtime.channel(roomId).emit('chat.message', message)
+
+      // NOTE: time to live
+      const remaining = await redis.ttl(`meta:${roomId}`)
+      await redis.expire(`messages:${roomId}`, remaining)
+      await redis.expire(roomId, remaining)
     },
     {
       // PERF: define dedicated schema to validate every API request involves this data

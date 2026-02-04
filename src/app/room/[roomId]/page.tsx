@@ -5,7 +5,9 @@ import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { useUsername } from '@/hooks/use-username'
 import { api } from '@/lib/api'
+import { useRealtime } from '@/lib/realtime-client'
 import { cn } from '@/lib/utils'
 
 function formatTimeRemaining(seconds: number) {
@@ -20,6 +22,7 @@ export default function Page() {
 
   const router = useRouter()
 
+  const { username } = useUsername()
   const [input, setInput] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -59,6 +62,13 @@ export default function Page() {
     return () => clearInterval(interval)
   }, [timeRemaining, router])
 
+  const { mutate: sendMessage, isPending } = useMutation({
+    mutationFn: async ({ text }: { text: string }) => {
+      await api.messages.post({ sender: username, text }, { query: { roomId } })
+
+      setInput('')
+    },
+  })
   const { mutate: destroyRoom } = useMutation({
     mutationFn: async () => {
       await api.room.delete(null, { query: { roomId } })
@@ -140,6 +150,7 @@ export default function Page() {
               ref={inputRef}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && input.trim()) {
+                  sendMessage({ text: input })
                   inputRef.current?.focus()
                 }
               }}
@@ -152,8 +163,10 @@ export default function Page() {
           <Button
             type="button"
             onClick={() => {
+              sendMessage({ text: input })
               inputRef.current?.focus()
             }}
+            disabled={!input.trim() || isPending}
             className="cursor-pointer bg-background/50 px-6 font-bold text-foreground text-sm transition-all hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
           >
             SEND
