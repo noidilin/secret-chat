@@ -1,6 +1,7 @@
 'use client'
 
 import { useMutation, useQuery } from '@tanstack/react-query'
+import { format } from 'date-fns'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -62,6 +63,14 @@ export default function Page() {
     return () => clearInterval(interval)
   }, [timeRemaining, router])
 
+  const { data: messages, refetch } = useQuery({
+    queryKey: ['messages', roomId],
+    queryFn: async () => {
+      const res = await api.messages.get({ query: { roomId } })
+      return res.data
+    },
+  })
+
   const { mutate: sendMessage, isPending } = useMutation({
     mutationFn: async ({ text }: { text: string }) => {
       await api.messages.post({ sender: username, text }, { query: { roomId } })
@@ -69,6 +78,16 @@ export default function Page() {
       setInput('')
     },
   })
+
+  useRealtime({
+    channels: [roomId],
+    events: ['chat.message', 'chat.destroy'],
+    onData: ({ event }) => {
+      if (event === 'chat.message') refetch() // from tanstack query
+      if (event === 'chat.destroy') router.push('/?destroyed=true') // state in url
+    },
+  })
+
   const { mutate: destroyRoom } = useMutation({
     mutationFn: async () => {
       await api.room.delete(null, { query: { roomId } })
@@ -136,7 +155,40 @@ export default function Page() {
         </button>
       </header>
 
-      <div className="scrollbar-thin flex-1 space-y-4 overflow-y-auto p-4"></div>
+      {/* MESSAGES */}
+      <div className="scrollbar-thin flex-1 space-y-4 overflow-y-auto p-4">
+        {messages?.messages.length === 0 && (
+          <div className="flex h-full items-center justify-center">
+            <p className="font-mono text-muted-foreground text-sm">
+              No messages yet, start the conversation.
+            </p>
+          </div>
+        )}
+
+        {messages?.messages.map((msg) => (
+          <div key={msg.id} className="flex flex-col items-start">
+            <div className="group max-w-[80%]">
+              <div className="mb-1 flex items-baseline gap-3">
+                <span
+                  className={`font-bold text-xs ${
+                    msg.sender === username ? 'text-green-500' : 'text-primary'
+                  }`}
+                >
+                  {msg.sender === username ? 'YOU' : msg.sender}
+                </span>
+
+                <span className="text-muted-foreground text-xs">
+                  {format(msg.timestamp, 'HH:mm')}
+                </span>
+              </div>
+
+              <p className="break-all text-foreground text-sm leading-relaxed">
+                {msg.text}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
 
       <div className="border-muted border-t p-4">
         <div className="flex gap-4">
