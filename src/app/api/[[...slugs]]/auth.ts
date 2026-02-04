@@ -8,9 +8,11 @@ class AuthError extends Error {
   }
 }
 
+// NOTE: Elysia plugin that will be executed before the route handler
+// `.derive` is used to compute and attach `auth` to the request context
 export const authMiddleware = new Elysia({ name: 'auth' })
   .error({ AuthError })
-  // NOTE: define error for the .derive middleware
+  // NOTE: define error detail for error in .derive
   .onError(({ code, set }) => {
     if (code === 'AuthError') {
       set.status = 401
@@ -32,5 +34,6 @@ export const authMiddleware = new Elysia({ name: 'auth' })
       throw new AuthError('Invalid token')
     }
 
+    // NOTE: auth will be available in route handler
     return { auth: { roomId, token, connected } }
   })

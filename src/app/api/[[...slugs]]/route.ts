@@ -1,6 +1,7 @@
 import { Elysia } from 'elysia'
 import { nanoid } from 'nanoid'
 import { z } from 'zod'
+import { type Message, realtime } from '@/lib/realtime'
 import { redis } from '@/lib/redis'
 import { authMiddleware } from './auth'
 
@@ -21,11 +22,35 @@ const rooms = new Elysia({ prefix: '/room' })
 
     return { roomId }
   })
-  .use(authMiddleware) // define in auth.ts to act as a middleware
+  // NOTE: ensure every protected route will runs the middleware first
+  .use(authMiddleware)
+  .get(
+    '/ttl',
+    // NOTE: handler rely on the `auth.roomId` or `auth.token` to compute logic
+    async ({ auth }) => {
+      const ttl = await redis.ttl(`meta:${auth.roomId}`)
+      return { ttl: ttl > 0 ? ttl : 0 }
+    },
+    // NOTE: the validator guarantee `roomId` exists so the middleware won't fail from missing input
+    { query: z.object({ roomId: z.string() }) },
+  )
+  .delete(
+    '/',
+    async ({ auth }) => {
+      await realtime
+        .channel(auth.roomId)
+        .emit('chat.destroy', { isDestroyed: true })
+
+      await Promise.all([
+        redis.del(auth.roomId),
+        redis.del(`meta:${auth.roomId}`),
+        redis.del(`messages:${auth.roomId}`),
+      ])
+    },
+    { query: z.object({ roomId: z.string() }) },
+  )
 
 const messages = new Elysia({ prefix: '/messages' })
-  // NOTE: since the middleware is executed before other method
-  // the following method can access the return object from middleware
   .use(authMiddleware)
   .post(
     '/',
@@ -62,6 +87,25 @@ const messages = new Elysia({ prefix: '/messages' })
         text: z.string().max(1000),
       }),
     },
+  )
+  .get(
+    '/',
+    async ({ auth }) => {
+      const messages = await redis.lrange<Message>(
+        `messages:${auth.roomId}`,
+        0,
+        -1,
+      )
+
+      // NOTE: do not include token for message is sent by you
+      return {
+        messages: messages.map((m) => ({
+          ...m,
+          token: m.token === auth.token ? auth.token : undefined,
+        })),
+      }
+    },
+    { query: z.object({ roomId: z.string() }) },
   )
 
 // NOTE: app is the main router and it use rooms + messages
