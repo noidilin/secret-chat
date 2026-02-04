@@ -4,6 +4,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useUsername } from '@/hooks/use-username'
 import { api } from '@/lib/api'
 
@@ -39,28 +40,40 @@ function Lobby() {
     <main className="flex min-h-screen flex-col items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8">
         {wasDestroyed && (
-          <div className="border border-red-900 bg-red-950/50 p-4 text-center">
-            <p className="font-bold text-red-500 text-sm">ROOM DESTROYED</p>
-            <p className="mt-1 text-muted-foreground text-xs">
+          <Card className="border border-red-900 bg-red-950/50 text-center">
+            <CardHeader>
+              <CardTitle className="font-bold text-red-500">
+                ROOM DESTROYED
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-muted-foreground">
               All messages were permanently deleted.
-            </p>
-          </div>
+            </CardContent>
+          </Card>
         )}
         {error === 'room-not-found' && (
-          <div className="border border-red-900 bg-red-950/50 p-4 text-center">
-            <p className="font-bold text-red-500 text-sm">ROOM NOT FOUND</p>
-            <p className="mt-1 text-muted-foreground text-xs">
+          <Card className="border border-red-900 bg-red-950/50 text-center">
+            <CardHeader>
+              <CardTitle className="font-bold text-red-500">
+                ROOM NOT FOUND
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-muted-foreground">
               This room may have expired or never existed.
-            </p>
-          </div>
+            </CardContent>
+          </Card>
         )}
         {error === 'room-full' && (
-          <div className="border border-red-900 bg-red-950/50 p-4 text-center">
-            <p className="font-bold text-red-500 text-sm">ROOM FULL</p>
-            <p className="mt-1 text-muted-foreground text-xs">
+          <Card className="border border-red-900 bg-red-950/50 text-center">
+            <CardHeader>
+              <CardTitle className="font-bold text-red-500">
+                ROOM FULL
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-muted-foreground">
               This room is at maximum capacity.
-            </p>
-          </div>
+            </CardContent>
+          </Card>
         )}
 
         <div className="space-y-2 text-center">
@@ -72,20 +85,16 @@ function Lobby() {
           </p>
         </div>
 
-        <div className="border border-muted/60 bg-background/50 p-6 backdrop-blur-md">
-          <div className="space-y-5">
-            <div className="space-y-2">
-              <p className="flex items-center text-muted-foreground">
-                Your Identity
-              </p>
-
-              <div className="flex items-center gap-3">
-                <div className="flex-1 border border-muted/60 bg-primary-foreground p-3 font-mono text-foreground text-sm">
-                  {username}
-                </div>
-              </div>
+        <Card className="border border-muted/60 bg-background/50 p-6 backdrop-blur-md">
+          <CardHeader>
+            <CardTitle className="font-semibold text-muted-foreground">
+              Your Identity
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center gap-3">
+            <div className="w-full border border-muted/60 bg-primary-foreground p-3 text-foreground text-sm">
+              {username}
             </div>
-
             <Button
               type="button"
               onClick={() => createRoom()}
@@ -93,8 +102,8 @@ function Lobby() {
             >
               CREATE SECURE ROOM
             </Button>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </main>
   )

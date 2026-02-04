@@ -145,14 +145,14 @@ export default function Page() {
           </div>
         </div>
 
-        <button
+        <Button
           type="button"
           onClick={() => destroyRoom()}
-          className="group flex items-center gap-2 rounded bg-background/50 px-3 py-1.5 font-bold text-foreground text-xs transition-all hover:bg-red-600 hover:text-white disabled:opacity-50"
+          className="group flex items-center gap-2 rounded bg-primary-foreground px-3 py-1.5 font-bold text-foreground text-xs transition-all hover:bg-red-950 hover:text-primary disabled:opacity-50"
         >
           <span className="text-red-500 group-hover:animate-pulse">X</span>
           DESTROY NOW
-        </button>
+        </Button>
       </header>
 
       {/* MESSAGES */}
@@ -171,7 +171,9 @@ export default function Page() {
               <div className="mb-1 flex items-baseline gap-3">
                 <span
                   className={`font-bold text-xs ${
-                    msg.sender === username ? 'text-green-500' : 'text-primary'
+                    msg.sender === username
+                      ? 'text-green-500'
+                      : 'text-amber-500'
                   }`}
                 >
                   {msg.sender === username ? 'YOU' : msg.sender}
