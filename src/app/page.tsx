@@ -6,7 +6,7 @@ import { Suspense } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useUsername } from '@/hooks/use-username'
-import { api } from '@/lib/api'
+import { client } from '@/lib/client'
 
 export default function Page() {
   return (
@@ -28,7 +28,7 @@ function Lobby() {
     mutationFn: async () => {
       // NOTE: client comes from elysia backend
       // the method we are allowed to use is fully type-safe
-      const res = await api.room.create.post()
+      const res = await client.room.create.post()
 
       if (res.status === 200) {
         router.push(`/room/${res.data?.roomId}`) // also fully type-safe

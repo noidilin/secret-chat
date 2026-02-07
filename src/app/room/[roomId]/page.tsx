@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useUsername } from '@/hooks/use-username'
-import { api } from '@/lib/api'
+import { client } from '@/lib/client'
 import { useRealtime } from '@/lib/realtime-client'
 import { cn } from '@/lib/utils'
 
@@ -33,7 +33,7 @@ export default function Page() {
   const { data: ttlData } = useQuery({
     queryKey: ['ttl', roomId],
     queryFn: async () => {
-      const res = await api.room.ttl.get({ query: { roomId } })
+      const res = await client.room.ttl.get({ query: { roomId } })
       return res.data
     },
   })
@@ -66,14 +66,17 @@ export default function Page() {
   const { data: messages, refetch } = useQuery({
     queryKey: ['messages', roomId],
     queryFn: async () => {
-      const res = await api.messages.get({ query: { roomId } })
+      const res = await client.messages.get({ query: { roomId } })
       return res.data
     },
   })
 
   const { mutate: sendMessage, isPending } = useMutation({
     mutationFn: async ({ text }: { text: string }) => {
-      await api.messages.post({ sender: username, text }, { query: { roomId } })
+      await client.messages.post(
+        { sender: username, text },
+        { query: { roomId } },
+      )
 
       setInput('')
     },
@@ -90,7 +93,7 @@ export default function Page() {
 
   const { mutate: destroyRoom } = useMutation({
     mutationFn: async () => {
-      await api.room.delete(null, { query: { roomId } })
+      await client.room.delete(null, { query: { roomId } })
     },
   })
 
